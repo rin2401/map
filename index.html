@@ -40,19 +40,6 @@
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        let points = [
-            [10.7381921, 106.6389516, "The Coffee House", "thecoffeehouse"],
-            [10.7361682, 106.6810945, "The Coffee House", "thecoffeehouse"],
-            [10.722118, 106.742083, "Chiayi Cafe_5G", "24683579"],
-            [10.7218875, 106.7412878, "U Coffee", "0785239779"]
-        ]
-
-        for (let i = 0; i < points.length; i++) {
-            const [lat, lng, name, pass] = points[i];
-
-            L.marker([lat, lng]).bindPopup(`Wifi: ${name}<br>Pass: ${pass}`).addTo(map);
-        }
-
         map.locate({
             // https://leafletjs.com/reference-1.7.1.html#locate-options-option
             setView: true,
@@ -90,12 +77,8 @@
             fetch(url)
             .then(x => x.text())
             .then(txt => {
-                console.log(txt)
-                
                 var jsonString = txt.match(/(?<="table":).*(?=}\);)/g)[0]
                 var json = JSON.parse(jsonString)
-
-                console.log(json)
 
                 var table = []
                 var row = []
@@ -114,6 +97,12 @@
                 )
 
                 console.log(table)
+
+                for (let i = 1; i < table.length; i++) {
+                    const [lat, lng, name, pass] = table[i];
+
+                    L.marker([lat, lng]).bindPopup(`Wifi: ${name}<br>Pass: ${pass}`).addTo(map);
+                }
 
                 return table
             })
