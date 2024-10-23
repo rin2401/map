@@ -40,39 +40,67 @@
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
+        let points = [
+            [10.7381921, 106.6389516, "The Coffee House", "thecoffeehouse"],
+            [10.7361682, 106.6810945, "The Coffee House", "thecoffeehouse"],
+            [10.722118, 106.742083, "Chiayi Cafe_5G", "24683579"],
+            [10.7218875, 106.7412878, "U Coffee", "0785239779"]
+        ]
 
-        L.marker([10.7220765, 106.743256]).addTo(map).bindPopup("Wifi: Home<br>Pass: 12345678");
+        for (let i = 0; i < points.length; i++) {
+            const [lat, lng, name, pass] = points[i];
 
-        map
-            .locate({
-                // https://leafletjs.com/reference-1.7.1.html#locate-options-option
-                setView: true,
-                enableHighAccuracy: true,
+            L.marker([lat, lng]).bindPopup(`Wifi: ${name}<br>Pass: ${pass}`).addTo(map);
+        }
+
+        map.locate({
+            // https://leafletjs.com/reference-1.7.1.html#locate-options-option
+            setView: true,
+            enableHighAccuracy: true,
+        })
+        // if location found show marker and circle
+        .on("locationfound", (e) => {
+            console.log(e);
+            // marker
+            const marker = L.marker([e.latitude, e.longitude]).bindPopup(
+                "Your are here :)"
+            );
+            // circle
+            // const circle = L.circle([e.latitude, e.longitude], e.accuracy / 2, {
+            //     weight: 2,
+            //     color: "red",
+            //     fillColor: "red",
+            //     fillOpacity: 0.1,
+            // });
+            // add marker
+            map.addLayer(marker);
+            // add circle
+            // map.addLayer(circle);
+        })
+        // if error show alert
+        .on("locationerror", (e) => {
+            console.log(e);
+            alert("Location access denied.");
+        });
+
+
+        function getData(){
+            var id = '12q04f4hwtVQjfVSUayDsgXLGGbqrl9urm8gp556nPQA';
+            var gid = '0';
+            var url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&tq&gid=${gid}`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
             })
-            // if location found show marker and circle
-            .on("locationfound", (e) => {
-                console.log(e);
-                // marker
-                const marker = L.marker([e.latitude, e.longitude]).bindPopup(
-                    "Your are here :)"
-                );
-                // circle
-                // const circle = L.circle([e.latitude, e.longitude], e.accuracy / 2, {
-                //     weight: 2,
-                //     color: "red",
-                //     fillColor: "red",
-                //     fillOpacity: 0.1,
-                // });
-                // add marker
-                map.addLayer(marker);
-                // add circle
-                // map.addLayer(circle);
-            })
-            // if error show alert
-            .on("locationerror", (e) => {
-                console.log(e);
-                alert("Location access denied.");
-            });
+            .then(response => response.json())
+            .then(response => console.log(JSON.stringify(response)))
+        }
+
+        getData()
+
     </script>
 </body>
 </html>
