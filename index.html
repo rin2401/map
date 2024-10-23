@@ -87,12 +87,8 @@
             var gid = '0';
             var url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&tq&gid=${gid}`;
 
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                },
-            })
+            fetch(url)
+            .then(x => x.text())
             .then(txt => {
                 console.log(txt)
                 
