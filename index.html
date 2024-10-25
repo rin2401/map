@@ -50,7 +50,7 @@
             console.log(e);
             // marker
             const marker = L.marker([e.latitude, e.longitude]).bindPopup(
-                "Your are here :)"
+                `Your are here :)<br>${e.latitude}<br>${e.longitude}`
             );
             // circle
             // const circle = L.circle([e.latitude, e.longitude], e.accuracy / 2, {
