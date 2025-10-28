@@ -193,10 +193,14 @@
                         const [lat, lng, location, cam_id, image, status] = table[i];
 
                         var image_url = `https://rinapi.vercel.app/cam?id=${cam_id}`;
-                        marker = L.marker([lat, lng], { icon: cameraIcon }).bindPopup(`<img src="${image_url}" width="100%"></img>🚦 ${location}`)
+                        marker = L.marker([lat, lng], { icon: cameraIcon })
+                        marker.bindPopup(`<img src="${image_url}" width="100%"></img>🚦 ${location}`, {
+                            minWidth: 300,
+                        })
                         marker.addTo(map);
 
                         marker.on('popupopen', function (e) {
+                            e.popup.update();
                             // console.log("popupopen", e.popup.innerHTML);
                             e.popup.setContent(e.popup.getContent() + `<div class="loader"></div>`);
                             var api_url = `https://rinapi.vercel.app/cam?id=${cam_id}&status=true`;
