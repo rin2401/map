@@ -192,7 +192,8 @@
                     for (let i = 1; i < table.length; i++) {
                         const [lat, lng, location, cam_id, image, status] = table[i];
 
-                        marker = L.marker([lat, lng], { icon: cameraIcon }).bindPopup(`🚦 ${location}`)
+                        var image_url = `https://rinapi.vercel.app/cam?id=${cam_id}`;
+                        marker = L.marker([lat, lng], { icon: cameraIcon }).bindPopup(`<img src="${image_url}" width="100%"></img>🚦 ${location}`)
                         marker.addTo(map);
 
                         marker.on('popupopen', function (e) {
