@@ -6,7 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Map</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛜</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛜</text></svg>">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -45,71 +46,137 @@
             setView: true,
             enableHighAccuracy: true,
         })
-        // if location found show marker and circle
-        .on("locationfound", (e) => {
-            console.log(e);
-            // marker
-            const marker = L.marker([e.latitude, e.longitude]).bindPopup(
-                `Your are here :)<br>${e.latitude}<br>${e.longitude}`
-            );
-            // circle
-            // const circle = L.circle([e.latitude, e.longitude], e.accuracy / 2, {
-            //     weight: 2,
-            //     color: "red",
-            //     fillColor: "red",
-            //     fillOpacity: 0.1,
-            // });
-            // add marker
-            map.addLayer(marker);
-            // add circle
-            // map.addLayer(circle);
-        })
-        // if error show alert
-        .on("locationerror", (e) => {
-            console.log(e);
-            alert("Location access denied.");
-        });
+            // if location found show marker and circle
+            .on("locationfound", (e) => {
+                console.log(e);
+                // marker
+                const marker = L.marker([e.latitude, e.longitude]).bindPopup(
+                    `Your are here :)<br>${e.latitude}<br>${e.longitude}`
+                );
+                // circle
+                // const circle = L.circle([e.latitude, e.longitude], e.accuracy / 2, {
+                //     weight: 2,
+                //     color: "red",
+                //     fillColor: "red",
+                //     fillOpacity: 0.1,
+                // });
+                // add marker
+                map.addLayer(marker);
+                // add circle
+                // map.addLayer(circle);
+            })
+            // if error show alert
+            .on("locationerror", (e) => {
+                console.log(e);
+                alert("Location access denied.");
+            });
 
-        function getData(id){
+        function getData(id) {
             var gid = '0';
             var url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&tq&gid=${gid}`;
 
             fetch(url)
-            .then(x => x.text())
-            .then(txt => {
-                var jsonString = txt.match(/(?<="table":).*(?=}\);)/g)[0]
-                var json = JSON.parse(jsonString)
+                .then(x => x.text())
+                .then(txt => {
+                    var jsonString = txt.match(/(?<="table":).*(?=}\);)/g)[0]
+                    var json = JSON.parse(jsonString)
 
-                var table = []
-                var row = []
-                json.cols.forEach(colonne => row.push(colonne.label))
-                table.push(row)
-                json.rows.forEach(r => {
+                    var table = []
                     var row = []
-                    r.c.forEach(cel => {
-                        try{var value = cel.f ? cel.f : cel.v}
-                        catch(e){var value = ''}
-                        row.push(value)
+                    json.cols.forEach(colonne => row.push(colonne.label))
+                    table.push(row)
+                    json.rows.forEach(r => {
+                        var row = []
+                        r.c.forEach(cel => {
+                            try { var value = cel.f ? cel.f : cel.v }
+                            catch (e) { var value = '' }
+                            row.push(value)
+                        }
+                        )
+                        table.push(row)
                     }
                     )
-                    table.push(row)
+
+                    console.log(table)
+
+                    for (let i = 1; i < table.length; i++) {
+                        const [lat, lng, name, pass] = table[i];
+
+                        L.marker([lat, lng]).bindPopup(`Wifi: ${name}<br>Pass: ${pass}`).addTo(map);
                     }
-                )
 
-                console.log(table)
-
-                for (let i = 1; i < table.length; i++) {
-                    const [lat, lng, name, pass] = table[i];
-
-                    L.marker([lat, lng]).bindPopup(`Wifi: ${name}<br>Pass: ${pass}`).addTo(map);
-                }
-
-                return table
-            })
+                    return table
+                })
         }
 
         getData('12q04f4hwtVQjfVSUayDsgXLGGbqrl9urm8gp556nPQA');
 
+        // Custom camera icon
+        const cameraIcon = L.icon({
+            iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+                    <circle cx="12" cy="12" r="11" fill="%23E74C3C" stroke="white" stroke-width="2"/>
+                    <rect x="7" y="9" width="8" height="6" rx="1" fill="white"/>
+                    <path d="M15 11 L17 9.5 L17 14.5 L15 13 Z" fill="white"/>
+                    <circle cx="11" cy="12" r="1.5" fill="%23E74C3C"/>
+                </svg>
+            `),
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]
+        });
+
+        function getCam(id) {
+            var gid = '382031510';
+            var url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&tq&gid=${gid}`;
+
+            fetch(url)
+                .then(x => x.text())
+                .then(txt => {
+                    var jsonString = txt.match(/(?<="table":).*(?=}\);)/g)[0]
+                    var json = JSON.parse(jsonString)
+
+                    var table = []
+                    var row = []
+                    json.cols.forEach(colonne => row.push(colonne.label))
+                    table.push(row)
+                    json.rows.forEach(r => {
+                        var row = []
+                        r.c.forEach(cel => {
+                            try { var value = cel.f ? cel.f : cel.v }
+                            catch (e) { var value = '' }
+                            row.push(value)
+                        }
+                        )
+                        table.push(row)
+                    }
+                    )
+
+                    console.log(table)
+
+                    for (let i = 1; i < table.length; i++) {
+                        const [lat, lng, location, cam_id, image, status] = table[i];
+
+                        marker = L.marker([lat, lng], { icon: cameraIcon }).bindPopup(`🚦 ${location}`)
+                        marker.addTo(map);
+
+                        var api_url = `https://rinapi.vercel.app/cam?id=${cam_id}&status=true`;
+                        marker.on('popupopen', function (e) {
+                            fetch(api_url)
+                                .then(x => x.json())
+                                .then(x => e.popup.setContent(`<img src="${x.image_url}" width="100%"></img>Cam: ${location}<br>${x.status.replace("\n", "<br>")}`));
+                        });
+
+                    }
+
+                    return table
+                })
+        }
+
+        getCam('12q04f4hwtVQjfVSUayDsgXLGGbqrl9urm8gp556nPQA');
+
+
     </script>
 </body>
+
 </html>
