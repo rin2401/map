@@ -14,6 +14,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
     <style>
         html,
@@ -127,18 +128,29 @@
                             try { var value = cel.f ? cel.f : cel.v }
                             catch (e) { var value = '' }
                             row.push(value)
-                        }
-                        )
+                        })
                         table.push(row)
-                    }
-                    )
+                    })
+
+
 
                     console.log(table)
 
                     for (let i = 1; i < table.length; i++) {
                         const [lat, lng, name, pass] = table[i];
 
-                        L.marker([lat, lng], { icon: wifiIcon }).bindPopup(`Wifi: ${name}<br>Pass: ${pass}`).addTo(map);
+                        let type = 'WPA'; // WEP | none
+                        let wifiString;
+                        if (pass) {
+                            wifiString = `WIFI:T:WPA;S:${name};P:${pass};;`;
+                        } else {
+                            wifiString = `WIFI:T:nopass;S:${name};H:false;;`;
+                        }
+                        const qr = qrcode(0, 'L');
+                        qr.addData(wifiString);
+                        qr.make();
+
+                        L.marker([lat, lng], { icon: wifiIcon }).bindPopup(`${qr.createImgTag(6)}<br>🛜 ${name}<br>🔑 ${pass}`).addTo(map);
                     }
 
                     return table
