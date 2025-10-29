@@ -191,16 +191,15 @@
                     console.log(table)
 
                     for (let i = 1; i < table.length; i++) {
-                        var [lat, lng, location, cam_id, angle, status] = table[i];
-                        angle = parseInt(angle);
+                        const [lat, lng, location, cam_id, angle, status] = table[i];
 
                         var image_url = `https://rinapi.vercel.app/cam?id=${cam_id}`;
                         marker = L.marker([lat, lng], {
                             icon: cameraIcon,
-                            rotationAngle: - angle,
+                            rotationAngle: - parseInt(angle),
                             rotationOrigin: 'center center'
                         })
-                        marker.bindPopup(`<img src="${image_url}" width="100%"></img>🚦 ${location} angle ${angle}`, {
+                        marker.bindPopup(`<img src="${image_url}" width="100%"></img>🚦 ${location}`, {
                             minWidth: 300,
                         })
 
