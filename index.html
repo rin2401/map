@@ -13,6 +13,7 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
 
     <style>
         html,
@@ -190,13 +191,19 @@
                     console.log(table)
 
                     for (let i = 1; i < table.length; i++) {
-                        const [lat, lng, location, cam_id, image, status] = table[i];
+                        var [lat, lng, location, cam_id, angle, status] = table[i];
+                        angle = parseInt(angle);
 
                         var image_url = `https://rinapi.vercel.app/cam?id=${cam_id}`;
-                        marker = L.marker([lat, lng], { icon: cameraIcon })
-                        marker.bindPopup(`<img src="${image_url}" width="100%"></img>🚦 ${location}`, {
+                        marker = L.marker([lat, lng], {
+                            icon: cameraIcon,
+                            rotationAngle: - angle,
+                            rotationOrigin: 'center center'
+                        })
+                        marker.bindPopup(`<img src="${image_url}" width="100%"></img>🚦 ${location} angle ${angle}`, {
                             minWidth: 300,
                         })
+
                         marker.addTo(map);
 
                         marker.on('popupopen', function (e) {
