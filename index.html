@@ -205,7 +205,9 @@
                     for (let i = 1; i < table.length; i++) {
                         const [lat, lng, location, cam_id, angle, status] = table[i];
 
-                        var image_url = `https://rinapi.vercel.app/cam?id=${cam_id}`;
+                        // var image_url = `https://rinapi.vercel.app/cam?id=${cam_id}`;
+
+                        var image_url = `https://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id=${cam_id}`;
                         marker = L.marker([lat, lng], {
                             icon: cameraIcon,
                             rotationAngle: - parseInt(angle),
