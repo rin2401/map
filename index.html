@@ -216,7 +216,7 @@
 
                         let popup_html = `<img src="${image_url}" width="100%"></img>🚦 <a href="${image_url}" target="_blank">${location}</a>`
                         marker.bindPopup(popup_html, {
-                            minWidth: 300,
+                            minWidth: Math.min(720, window.innerWidth)
                         })
 
                         marker.addTo(map);
