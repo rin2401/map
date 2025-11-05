@@ -213,7 +213,9 @@
                             rotationAngle: - parseInt(angle),
                             rotationOrigin: 'center center'
                         })
-                        marker.bindPopup(`<img src="${image_url}" width="100%"></img>🚦 <a href="${image_url}" target="_blank">${location}</a>`, {
+
+                        let popup_html = `<img src="${image_url}" width="100%"></img>🚦 <a href="${image_url}" target="_blank">${location}</a>`
+                        marker.bindPopup(popup_html, {
                             minWidth: 300,
                         })
 
@@ -231,7 +233,7 @@
                             var api_url = `https://rinapi.vercel.app/tide?location=sai-gon`;
                             fetch(api_url)
                                 .then(x => x.json())
-                                .then(x => e.popup.setContent(e.popup.getContent() + x.text.replaceAll("\n", "<br>")));
+                                .then(x => e.popup.setContent(popup_html + x.text.replaceAll("\n", "<br>")));
 
                         });
 
