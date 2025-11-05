@@ -213,7 +213,7 @@
                             rotationAngle: - parseInt(angle),
                             rotationOrigin: 'center center'
                         })
-                        marker.bindPopup(`<img src="${image_url}" width="100%"></img>🚦 ${location}`, {
+                        marker.bindPopup(`<img src="${image_url}" width="100%"></img>🚦 <a href="${image_url}" target="_blank">${location}</a>`, {
                             minWidth: 300,
                         })
 
@@ -222,11 +222,17 @@
                         marker.on('popupopen', function (e) {
                             e.popup.update();
                             // console.log("popupopen", e.popup.innerHTML);
-                            e.popup.setContent(e.popup.getContent() + `<div class="loader"></div>`);
-                            var api_url = `https://rinapi.vercel.app/cam?id=${cam_id}&status=true`;
+                            // e.popup.setContent(e.popup.getContent() + `<div class="loader"></div>`);
+                            // var api_url = `https://rinapi.vercel.app/cam?id=${cam_id}&status=true`;
+                            // fetch(api_url)
+                            //     .then(x => x.json())
+                            //     .then(x => e.popup.setContent(`<img src="${x.image_url}" width="100%"></img>🚦 ${location}<br>${x.status.replaceAll("\n", "<br>")}`));
+
+                            var api_url = `https://rinapi.vercel.app/tide?location=sai-gon`;
                             fetch(api_url)
                                 .then(x => x.json())
-                                .then(x => e.popup.setContent(`<img src="${x.image_url}" width="100%"></img>🚦 ${location}<br>${x.status.replaceAll("\n", "<br>")}`));
+                                .then(x => e.popup.setContent(e.popup.getContent() + x.text.replaceAll("\n", "<br>")));
+
                         });
 
                     }
