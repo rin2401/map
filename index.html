@@ -205,16 +205,16 @@
                     for (let i = 1; i < table.length; i++) {
                         const [lat, lng, location, cam_id, angle, status] = table[i];
 
-                        // var image_url = `https://rinapi.vercel.app/cam?id=${cam_id}`;
+                        let image_url = `https://rinapi.vercel.app/cam?id=${cam_id}`;
 
-                        var image_url = `https://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id=${cam_id}`;
+                        let image_raw_url = `https://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id=${cam_id}`;
                         marker = L.marker([lat, lng], {
                             icon: cameraIcon,
                             rotationAngle: - parseInt(angle),
                             rotationOrigin: 'center center'
                         })
 
-                        let popup_html = `<img src="${image_url}" width="100%"></img>🚦 <a href="${image_url}" target="_blank">${location}</a>`
+                        let popup_html = `<img src="${image_url}" width="100%"></img>🚦 <a href="${image_raw_url}" target="_blank">${location}</a>`
                         marker.bindPopup(popup_html, {
                             minWidth: Math.min(720, window.innerWidth)
                         })
@@ -233,7 +233,9 @@
                             var api_url = `https://rinapi.vercel.app/tide?location=sai-gon`;
                             fetch(api_url)
                                 .then(x => x.json())
-                                .then(x => e.popup.setContent(popup_html + x.text.replaceAll("\n", "<br>")));
+                                .then(x => {
+                                    e.popup.setContent(popup_html + x.text.replaceAll("\n", "<br>"))
+                                });
 
                         });
 
