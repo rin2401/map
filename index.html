@@ -14,6 +14,12 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/pouchdb@^5.2.0/dist/pouchdb.js"></script>
+    <script src="https://unpkg.com/leaflet.tilelayer.pouchdbcached@latest/L.TileLayer.PouchDBCached.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
     <style>
@@ -59,40 +65,43 @@
 
         const map = L.map('map').setView([10.7220765, 106.743256], 13);
 
-        const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //     maxZoom: 19,
+        //     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        // }).addTo(map);
+
+        const tiles = L.tileLayer("https://{s}.google.com/vt/lyrm=m&x={x}&y={y}&z={z}", {
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google',
             maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            useCache: true,
         }).addTo(map);
 
         map.locate({
             // https://leafletjs.com/reference-1.7.1.html#locate-options-option
             setView: true,
             enableHighAccuracy: true,
-        })
-            // if location found show marker and circle
-            .on("locationfound", (e) => {
-                console.log(e);
-                // marker
-                const marker = L.marker([e.latitude, e.longitude]).bindPopup(
-                    `Your are here :)<br>${e.latitude}<br>${e.longitude}`
-                );
-                // circle
-                // const circle = L.circle([e.latitude, e.longitude], e.accuracy / 2, {
-                //     weight: 2,
-                //     color: "red",
-                //     fillColor: "red",
-                //     fillOpacity: 0.1,
-                // });
-                // add marker
-                map.addLayer(marker);
-                // add circle
-                // map.addLayer(circle);
-            })
-            // if error show alert
-            .on("locationerror", (e) => {
-                console.log(e);
-                alert("Location access denied.");
-            });
+        }).on("locationfound", (e) => {
+            console.log(e);
+            // marker
+            const marker = L.marker([e.latitude, e.longitude]).bindPopup(
+                `Your are here :)<br>${e.latitude}<br>${e.longitude}`
+            );
+            // circle
+            // const circle = L.circle([e.latitude, e.longitude], e.accuracy / 2, {
+            //     weight: 2,
+            //     color: "red",
+            //     fillColor: "red",
+            //     fillOpacity: 0.1,
+            // });
+            // add marker
+            map.addLayer(marker);
+            // add circle
+            // map.addLayer(circle);
+        }).on("locationerror", (e) => {
+            console.log(e);
+            alert("Location access denied.");
+        });
 
         const wifiIcon = L.icon({
             iconUrl: 'data:image/svg+xml;base64,' + btoa(`
@@ -202,6 +211,8 @@
 
                     console.log(table)
 
+                    // var markers = L.markerClusterGroup();
+
                     for (let i = 1; i < table.length; i++) {
                         const [lat, lng, location, cam_id, angle, status] = table[i];
 
@@ -219,7 +230,6 @@
                             minWidth: Math.min(720, window.innerWidth)
                         })
 
-                        marker.addTo(map);
 
                         marker.on('popupopen', function (e) {
                             e.popup.update();
@@ -239,7 +249,12 @@
 
                         });
 
+                        marker.addTo(map);
+
+                        // markers.addLayer(marker)
                     }
+
+                    // map.addLayer(markers);
 
                     return table
                 })
