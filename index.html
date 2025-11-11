@@ -244,7 +244,7 @@
                             fetch(api_url)
                                 .then(x => x.json())
                                 .then(x => {
-                                    e.popup.setContent(popup_html + x.text.replaceAll("\n", "<br>"))
+                                    e.popup.setContent(popup_html + `<br>🌊 Thủy triều: <a href="${x.url}" target="_blank">${x.current_height}m</a>`)
                                 });
 
                         });
@@ -263,6 +263,14 @@
         getCam('12q04f4hwtVQjfVSUayDsgXLGGbqrl9urm8gp556nPQA');
 
 
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1PSF8GWBEY"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-1PSF8GWBEY');
     </script>
 </body>
 
