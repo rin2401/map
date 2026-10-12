@@ -247,51 +247,66 @@
             popupAnchor: [0, -16]
         });
 
-        function getCam(id) {
-            var gid = '382031510';
-            var url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&tq&gid=${gid}`;
+        // cameras whose gov status is NOT_IMAGE (installed, no image yet)
+        const cameraGrayIcon = L.icon({
+            iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+                    <circle cx="12" cy="12" r="11" fill="#9E9E9E" stroke="white" stroke-width="2"/>
+                    <rect x="7" y="9" width="8" height="6" rx="1" fill="white"/>
+                    <path d="M15 11 L17 9.5 L17 14.5 L15 13 Z" fill="white"/>
+                    <circle cx="11" cy="12" r="1.5" fill="#9E9E9E"/>
+                </svg>
+            `),
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]
+        });
 
-            fetch(url)
-                .then(x => x.text())
-                .then(txt => {
-                    var jsonString = txt.match(/(?<="table":).*(?=}\);)/g)[0]
-                    var json = JSON.parse(jsonString)
+        function getCam() {
+            // worker-first: fresh list from gov.vn incl. status; Google Sheet is the fallback
+            fetch('https://rinapi.rin2401.workers.dev/cams')
+                .then(x => x.json())
+                .then(data => renderCams(data.rows))
+                .catch(() => {
+                    var gid = '382031510';
+                    var url = `https://docs.google.com/spreadsheets/d/12q04f4hwtVQjfVSUayDsgXLGGbqrl9urm8gp556nPQA/gviz/tq?tqx=out:json&tq&gid=${gid}`;
+                    fetch(url)
+                        .then(x => x.text())
+                        .then(txt => {
+                            var jsonString = txt.match(/(?<="table":).*(?=}\);)/g)[0]
+                            var json = JSON.parse(jsonString)
+                            var rows = json.rows.map(r => {
+                                var cel = r.c || [];
+                                const v = i => (cel[i] ? (cel[i].f ?? cel[i].v ?? '') : '');
+                                // sheet has no status column: [lat, lng, location, cam_id, angle, elevation]
+                                return [v(0), v(1), v(2), v(3), v(4), ''];
+                            });
+                            renderCams(rows);
+                        });
+                });
+        }
 
-                    var table = []
-                    var row = []
-                    json.cols.forEach(colonne => row.push(colonne.label))
-                    table.push(row)
-                    json.rows.forEach(r => {
-                        var row = []
-                        r.c.forEach(cel => {
-                            try { var value = cel.f ? cel.f : cel.v }
-                            catch (e) { var value = '' }
-                            row.push(value)
-                        }
-                        )
-                        table.push(row)
-                    }
-                    )
+        function renderCams(rawRows) {
+            // /cams rows are arrays, but an older cached response may still be
+            // object-shaped; normalize so the destructure below always works
+            const rows = rawRows.map((r) =>
+                Array.isArray(r) ? r : [r.lat, r.lng, r.location, r.cam_id, r.angle, r.status],
+            );
+            // tide is hourly data: one shared 5-minute cache for all popups
+            const tideCache = { data: null, ts: 0 };
+            const TIDE_TTL = 5 * 60 * 1000;
 
-                    console.log(table)
+            for (let i = 0; i < rows.length; i++) {
+                const [lat, lng, location, cam_id, angle, status] = rows[i];
 
-                    // var markers = L.markerClusterGroup();
+                let image_url = `https://rinapi.rin2401.workers.dev/cam?id=${cam_id}`;
 
-                    // tide is hourly data: one shared 5-minute cache for all popups
-                    const tideCache = { data: null, ts: 0 };
-                    const TIDE_TTL = 5 * 60 * 1000;
-
-                    for (let i = 1; i < table.length; i++) {
-                        const [lat, lng, location, cam_id, angle, status] = table[i];
-
-                        let image_url = `https://rinapi.rin2401.workers.dev/cam?id=${cam_id}`;
-
-                        let image_raw_url = `https://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id=${cam_id}`;
-                        marker = L.marker([lat, lng], {
-                            icon: cameraIcon,
-                            rotationAngle: - parseInt(angle),
-                            rotationOrigin: 'center center'
-                        })
+                let image_raw_url = `https://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id=${cam_id}`;
+                marker = L.marker([lat, lng], {
+                    icon: status === 'NOT_IMAGE' ? cameraGrayIcon : cameraIcon,
+                    rotationAngle: -(parseInt(angle) || 0),
+                    rotationOrigin: 'center center'
+                })
 
                         // rinapi (proxied, CDN+browser cached 60s) first; raw gov endpoint is flaky, keep as fallback
                         let popup_html = `<img src="${image_url}" onerror="this.onerror=null;this.src='${image_raw_url}';" width="100%"></img>${icon('camera')} <a href="${image_raw_url}" target="_blank">${location}</a><span class="tide"></span>`
@@ -325,17 +340,10 @@
                         });
 
                         marker.addTo(map);
-
-                        // markers.addLayer(marker)
                     }
-
-                    // map.addLayer(markers);
-
-                    return table
-                })
         }
 
-        getCam('12q04f4hwtVQjfVSUayDsgXLGGbqrl9urm8gp556nPQA');
+        getCam();
 
 
     </script>
