@@ -222,6 +222,10 @@
 
                     // var markers = L.markerClusterGroup();
 
+                    // tide is hourly data: one shared 5-minute cache for all popups
+                    const tideCache = { data: null, ts: 0 };
+                    const TIDE_TTL = 5 * 60 * 1000;
+
                     for (let i = 1; i < table.length; i++) {
                         const [lat, lng, location, cam_id, angle, status] = table[i];
 
@@ -234,26 +238,33 @@
                             rotationOrigin: 'center center'
                         })
 
-                        let popup_html = `<img src="${image_raw_url}" onerror="this.src='${image_url}';" width="100%"></img>🚦 <a href="${image_raw_url}" target="_blank">${location}</a>`
+                        // rinapi (proxied, CDN+browser cached 60s) first; raw gov endpoint is flaky, keep as fallback
+                        let popup_html = `<img src="${image_url}" onerror="this.onerror=null;this.src='${image_raw_url}';" width="100%"></img>🚦 <a href="${image_raw_url}" target="_blank">${location}</a><span class="tide"></span>`
                         marker.bindPopup(popup_html, {
                             minWidth: Math.min(720, window.innerWidth)
                         })
 
 
                         marker.on('popupopen', function (e) {
-                            e.popup.update();
-                            // console.log("popupopen", e.popup.innerHTML);
-                            // e.popup.setContent(e.popup.getContent() + `<div class="loader"></div>`);
-                            // var api_url = `https://rinapi.vercel.app/cam?id=${cam_id}&status=true`;
-                            // fetch(api_url)
-                            //     .then(x => x.json())
-                            //     .then(x => e.popup.setContent(`<img src="${x.image_url}" width="100%"></img>🚦 ${location}<br>${x.status.replaceAll("\n", "<br>")}`));
+                            // fill the tide slot in place instead of setContent,
+                            // so re-rendering the popup does not refetch the image
+                            const tideEl = e.popup.getElement().querySelector('.tide');
+                            const renderTide = (x) => {
+                                tideEl.innerHTML = `🌊 Thủy triều: <a href="${x.url}" target="_blank">${x.current_height}m</a>`;
+                            };
+
+                            if (tideCache.data && Date.now() - tideCache.ts < TIDE_TTL) {
+                                renderTide(tideCache.data);
+                                return;
+                            }
 
                             var api_url = `https://rinapi.vercel.app/tide?location=sai-gon`;
                             fetch(api_url)
                                 .then(x => x.json())
                                 .then(x => {
-                                    e.popup.setContent(popup_html + `<br>🌊 Thủy triều: <a href="${x.url}" target="_blank">${x.current_height}m</a>`)
+                                    tideCache.data = x;
+                                    tideCache.ts = Date.now();
+                                    renderTide(x)
                                 });
 
                         });
